@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anysee.bar/schemas/signal.schema.json",
+  "title": "AnySee Signal",
+  "type": "object",
+  "required": ["id", "title", "priority", "state", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "body": { "type": "string" },
+    "priority": { "type": "string", "enum": ["none", "low", "normal", "high", "critical"] },
+    "state": { "type": "string", "enum": ["ok", "needs_attention", "running", "paused", "unknown"] },
+    "source": { "type": "string", "minLength": 1 },
+    "url": { "type": "string" },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "enum": ["open_url", "copy_text", "run_command", "dismiss", "snooze"] },
+          "url": { "type": "string" },
+          "text": { "type": "string" },
+          "command": { "type": "string" },
+          "arguments": { "type": "array", "items": { "type": "string" } },
+          "duration_minutes": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

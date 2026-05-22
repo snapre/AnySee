@@ -1,0 +1,25 @@
+id = "welcome"
+name = "Welcome"
+kind = "manual"
+enabled = true
+
+[refresh]
+kind = "manual"
+
+[[signal]]
+id = "welcome-to-anysee"
+title = "AnySee is ready"
+body = "Edit sources/*.toml to decide what deserves attention."
+priority = "normal"
+state = "needs_attention"
+source = "welcome"
+url = "https://anysee.bar"
+
+[[signal.action]]
+label = "Open site"
+type = "open_url"
+url = "https://anysee.bar"
+
+[[signal.action]]
+label = "Dismiss"
+type = "dismiss"

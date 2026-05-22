@@ -1,0 +1,11 @@
+id = "example-script"
+name = "Example Script"
+kind = "script"
+enabled = false
+
+[refresh]
+kind = "manual"
+
+[script]
+path = "sample-signal.sh"
+timeout_seconds = 10

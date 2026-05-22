@@ -1,0 +1,12 @@
+{
+  "id": "backup-failed",
+  "title": "Backup failed",
+  "body": "Last backup exited with code 1",
+  "priority": "high",
+  "state": "needs_attention",
+  "source": "backup-script",
+  "url": "file:///Users/me/backup.log",
+  "actions": [
+    { "label": "Open log", "type": "open_url", "url": "file:///Users/me/backup.log" }
+  ]
+}

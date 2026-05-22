@@ -1,0 +1,20 @@
+id = "example-http"
+name = "Example HTTP"
+kind = "http"
+enabled = false
+
+[refresh]
+kind = "interval"
+interval_seconds = 300
+
+[http]
+url = "https://example.com/health.json"
+method = "GET"
+expected_status = 200
+signal_on_status_mismatch = true
+json_path = "status"
+not_equals = "ok"
+title = "Example service needs attention"
+body = "The HTTP health check did not report status=ok."
+priority = "high"
+state = "needs_attention"
