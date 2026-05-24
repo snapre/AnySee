@@ -47,6 +47,41 @@ final class SourceRunnerTests: XCTestCase {
         try? FileManager.default.removeItem(at: tempRoot)
     }
 
+    func testScriptRunnerValidatesEmittedRunCommandActions() throws {
+        let tempRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AnySeeTests-\(UUID().uuidString)", isDirectory: true)
+        let paths = AnySeeConfigPaths(rootDirectory: tempRoot)
+        try FileManager.default.createDirectory(at: paths.scriptsDirectory, withIntermediateDirectories: true)
+
+        let actionExecutableURL = paths.scriptsDirectory.appendingPathComponent("fix.sh")
+        try """
+        #!/bin/sh
+        exit 0
+        """.write(to: actionExecutableURL, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: actionExecutableURL.path)
+
+        let scriptURL = paths.scriptsDirectory.appendingPathComponent("signal.sh")
+        try """
+        #!/bin/sh
+        printf '%s\\n' '{"id":"from-script","title":"From script","priority":"high","state":"needs_attention","source":"script","actions":[{"label":"Fix","type":"run_command","command":"fix.sh"}]}'
+        """.write(to: scriptURL, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptURL.path)
+
+        let source = SignalSource(
+            id: "script",
+            name: "Script",
+            kind: .script,
+            script: ScriptSourceOptions(path: "signal.sh", timeoutSeconds: 5)
+        )
+
+        let result = SourceRunner().run(source, paths: paths)
+
+        XCTAssertTrue(result.issues.isEmpty)
+        XCTAssertEqual(result.items.first?.actions.first?.command, "fix.sh")
+
+        try? FileManager.default.removeItem(at: tempRoot)
+    }
+
     func testJSONPathReaderReadsNestedValues() throws {
         let data = #"{"status":"degraded","checks":[{"name":"db","ok":false}]}"#.data(using: .utf8)!
 

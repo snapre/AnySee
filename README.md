@@ -154,7 +154,7 @@ Script sources must write either one Signal JSON object or an array of Signal JS
 }
 ```
 
-Supported actions are `open_url`, `copy_text`, `run_command`, `dismiss`, and `snooze`. `run_command` is executed directly without a shell.
+Supported actions are `open_url`, `copy_text`, `run_command`, `dismiss`, and `snooze`. `run_command` is executed directly without a shell. Absolute commands run as provided; relative commands resolve under `~/Library/Application Support/AnySee/scripts/` and must stay inside that directory.
 
 ## Credential Policy
 

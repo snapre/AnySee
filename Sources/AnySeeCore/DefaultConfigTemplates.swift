@@ -248,6 +248,7 @@ public enum DefaultConfigTemplates {
 
     - Do not put API tokens, passwords, cookies, session IDs, SSH keys, or OAuth credentials in TOML, scripts, examples, prompts, or signal bodies.
     - Prefer relative script paths under `scripts/`.
+    - Prefer relative `run_command` commands under `scripts/`; AnySee resolves them there and rejects traversal outside that directory.
     - Do not use shell pipelines in generated config. AnySee runs script sources directly and run_command actions without a shell.
     - Keep scripts narrowly scoped, readable, and deterministic. Avoid network calls unless the user explicitly asked for that source.
     - If future credentials are needed, instruct the user to store them in macOS Keychain and reference only a key name from config.

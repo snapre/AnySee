@@ -20,6 +20,7 @@ public enum AIConfigurationPrompt {
         - Do not add Gmail, Slack, GitHub, OAuth, cloud sync, or plugin marketplace behavior.
         - Do not write credentials, tokens, cookies, passwords, or secrets into config files.
         - Prefer relative script paths under scripts/.
+        - Prefer relative run_command commands under scripts/; they are resolved there and must not traverse outside it.
         - Script stdout must be one Signal JSON object or an array of Signal JSON objects.
 
         Local config directory:

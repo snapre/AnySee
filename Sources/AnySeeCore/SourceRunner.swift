@@ -179,7 +179,8 @@ public struct SourceRunner: Sendable {
 
         do {
             let items = try decodeSignalOutput(stdoutData, defaultSourceID: source.id)
-            return SourceRunResult(sourceID: source.id, items: items, rawOutput: stdout)
+            let issues = items.flatMap { ConfigStore(paths: paths).validate(signal: $0, sourceID: source.id) }
+            return SourceRunResult(sourceID: source.id, items: items, issues: issues, rawOutput: stdout)
         } catch {
             return SourceRunResult(
                 sourceID: source.id,
