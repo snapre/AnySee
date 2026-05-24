@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AnySee - Local-first menu bar attention center for macOS</title>
+    <meta
+      name="description"
+      content="AnySee is a local-first macOS menu bar attention center for the signals you actually want to watch."
+    >
+    <link rel="canonical" href="https://anysee.bar/">
+    <meta name="theme-color" content="#151815">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AnySee">
+    <meta
+      property="og:description"
+      content="A quiet, local-first macOS menu bar attention center for signals that matter."
+    >
+    <meta property="og:url" content="https://anysee.bar/">
+    <meta property="og:image" content="https://anysee.bar/assets/social-preview.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="brand" href="/" aria-label="AnySee home">
+        <img src="/assets/mark.svg" alt="" width="32" height="32">
+        <span>AnySee</span>
+      </a>
+      <nav class="nav-links" aria-label="Site navigation">
+        <a href="#fit">Positioning</a>
+        <a href="#sources">Sources</a>
+        <a href="#waitlist">Waitlist</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-visual" aria-hidden="true">
+          <div class="desktop-line">
+            <span class="window-dot red"></span>
+            <span class="window-dot yellow"></span>
+            <span class="window-dot green"></span>
+            <span class="menu-copy">AnySee</span>
+            <span class="menu-spacer"></span>
+            <span class="menu-chip alert">2</span>
+            <span class="menu-chip calm"></span>
+          </div>
+          <div class="attention-popover">
+            <div class="popover-head">
+              <div>
+                <span class="eyebrow">Attention Feed</span>
+                <strong>2 signals</strong>
+              </div>
+              <span class="refresh-dot"></span>
+            </div>
+            <div class="signal-row critical">
+              <span class="signal-icon"></span>
+              <div>
+                <strong>Backup failed</strong>
+                <p>Open the log before the next run.</p>
+                <small>script: backup-check</small>
+              </div>
+            </div>
+            <div class="signal-row high">
+              <span class="signal-icon"></span>
+              <div>
+                <strong>Billing health changed</strong>
+                <p>Endpoint did not return status=ok.</p>
+                <small>http: production-health</small>
+              </div>
+            </div>
+            <div class="signal-row quiet">
+              <span class="signal-icon"></span>
+              <div>
+                <strong>Nothing else needs attention</strong>
+                <p>Quiet sources stay out of the way.</p>
+                <small>manual, http, script</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-content">
+          <p class="kicker">Local-first macOS attention center</p>
+          <h1 id="hero-title">One quiet menu bar for signals worth noticing.</h1>
+          <p class="hero-copy">
+            AnySee watches the small set of checks you choose and only lights up
+            when a local source says something needs attention.
+          </p>
+          <div class="hero-actions" aria-label="Primary calls to action">
+            <a class="button primary" href="#waitlist">Request first build</a>
+            <a class="button secondary" href="#fit">See the shape</a>
+          </div>
+          <div class="trust-line" aria-label="Product boundaries">
+            <span>No cloud account</span>
+            <span>No model API calls</span>
+            <span>No credential storage in config</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section split" id="fit" aria-labelledby="fit-title">
+        <div>
+          <p class="section-kicker">Built for attention debt</p>
+          <h2 id="fit-title">Not a notification center. Not a dashboard. Not a feed.</h2>
+        </div>
+        <div class="fit-copy">
+          <p>
+            AnySee is for operational signals that deserve a glance but not a
+            new SaaS habit: backups, local scripts, health endpoints, build
+            checks, personal workflows, and the odd reminder that should not
+            disappear into Notification Center.
+          </p>
+          <p>
+            The first version is intentionally small: a native macOS menu bar
+            app, local TOML config, manual/http/script sources, and actions that
+            open, copy, snooze, dismiss, or run commands directly.
+          </p>
+        </div>
+      </section>
+
+      <section class="section source-band" id="sources" aria-labelledby="sources-title">
+        <div class="section-heading">
+          <p class="section-kicker">Signal sources</p>
+          <h2 id="sources-title">Start with files you can inspect.</h2>
+        </div>
+        <div class="source-grid" role="list">
+          <article class="source-card" role="listitem">
+            <span class="source-tag">manual</span>
+            <h3>Pin the rare thing</h3>
+            <p>Static signals for tasks that should stay visible until you act.</p>
+            <code>sources/welcome.toml</code>
+          </article>
+          <article class="source-card" role="listitem">
+            <span class="source-tag">http</span>
+            <h3>Watch a health value</h3>
+            <p>Check a status code or JSON field and create one sparse signal.</p>
+            <code>json_path = "status"</code>
+          </article>
+          <article class="source-card" role="listitem">
+            <span class="source-tag">script</span>
+            <h3>Let your Mac decide</h3>
+            <p>Run a local executable and parse Signal JSON from stdout.</p>
+            <code>scripts/*.sh</code>
+          </article>
+        </div>
+      </section>
+
+      <section class="section workflow" aria-labelledby="workflow-title">
+        <div class="section-heading compact">
+          <p class="section-kicker">First launch shape</p>
+          <h2 id="workflow-title">A short path from idea to visible signal.</h2>
+        </div>
+        <ol class="workflow-list">
+          <li>
+            <span>01</span>
+            <strong>Choose what matters</strong>
+            <p>Keep the watch list sparse enough that every signal can earn a click.</p>
+          </li>
+          <li>
+            <span>02</span>
+            <strong>Use local config</strong>
+            <p>TOML sources live under Application Support with readable examples.</p>
+          </li>
+          <li>
+            <span>03</span>
+            <strong>Act from the popover</strong>
+            <p>Open a URL, copy text, snooze, dismiss, or run a command without a shell.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section waitlist" id="waitlist" aria-labelledby="waitlist-title">
+        <div class="waitlist-copy">
+          <p class="section-kicker">Early access</p>
+          <h2 id="waitlist-title">Get the first macOS build.</h2>
+          <p>
+            Join the small launch list for AnySee. I will use this only to send
+            build availability, setup notes, and a few product questions.
+          </p>
+          <a class="contact-link" href="mailto:hello@anysee.bar">hello@anysee.bar</a>
+        </div>
+
+        <form class="waitlist-form" action="/api/waitlist" method="post" data-waitlist-form>
+          <div class="field-grid">
+            <label>
+              <span>Email</span>
+              <input
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              >
+            </label>
+            <label>
+              <span>Name</span>
+              <input name="name" type="text" autocomplete="name" placeholder="Optional">
+            </label>
+          </div>
+          <label>
+            <span>What would AnySee watch for you?</span>
+            <textarea
+              name="note"
+              rows="4"
+              placeholder="Backups, builds, personal scripts, health checks..."
+            ></textarea>
+          </label>
+          <label class="honeypot" aria-hidden="true">
+            <span>Company website</span>
+            <input name="website" type="text" tabindex="-1" autocomplete="off">
+          </label>
+          <button class="button primary" type="submit">Join waitlist</button>
+          <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+          <p class="privacy-note">
+            No analytics script is loaded on this page. Submissions are stored only
+            when the Cloudflare KV waitlist binding is configured.
+          </p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>AnySee</span>
+      <span>Local-first macOS attention center</span>
+      <a href="mailto:hello@anysee.bar">Contact</a>
+    </footer>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

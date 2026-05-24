@@ -1,0 +1,16 @@
+{
+  "name": "AnySee",
+  "short_name": "AnySee",
+  "description": "A local-first macOS menu bar attention center.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fbf3",
+  "theme_color": "#151815",
+  "icons": [
+    {
+      "src": "/assets/mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

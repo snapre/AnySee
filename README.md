@@ -52,6 +52,39 @@ swift run anysee run welcome
 
 `doctor` creates the local config directory and default examples if they do not already exist.
 
+## Website
+
+The first-launch website for `anysee.bar` lives in `public/`. It is a static
+Cloudflare Pages site with one optional Pages Function at
+`functions/api/waitlist.js` for waitlist/contact capture.
+
+Cloudflare Pages settings:
+
+```text
+Build command: none
+Build output directory: public
+Functions directory: functions
+Project name: anysee-bar
+```
+
+Local preview with Wrangler:
+
+```sh
+npx wrangler pages dev public --kv=ANYSEE_WAITLIST
+```
+
+First deploy:
+
+```sh
+npx wrangler pages deploy public --project-name anysee-bar
+```
+
+The waitlist Function stores submissions only when a Cloudflare KV binding named
+`ANYSEE_WAITLIST` is configured. Do not commit API tokens, mailbox credentials,
+or webhook secrets. If you add outbound email later, store the secret in
+Cloudflare environment variables and keep only the non-secret binding or variable
+name in the repo.
+
 ## Configuration
 
 Global settings live in `anysee.toml`:

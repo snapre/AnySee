@@ -1,0 +1,14 @@
+name = "anysee-bar"
+compatibility_date = "2026-05-24"
+pages_build_output_dir = "./public"
+
+[vars]
+CONTACT_EMAIL = "hello@anysee.bar"
+
+# Create a Cloudflare KV namespace and bind it as ANYSEE_WAITLIST before
+# relying on /api/waitlist for production capture. The waitlist function falls
+# back to the public contact email when this binding is absent.
+#
+# [[kv_namespaces]]
+# binding = "ANYSEE_WAITLIST"
+# id = "replace-with-kv-namespace-id"

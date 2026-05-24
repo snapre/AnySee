@@ -5,3 +5,5 @@ xcuserdata/
 DerivedData/
 *.xcuserstate
 *.swp
+node_modules/
+.wrangler/
