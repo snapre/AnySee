@@ -15,7 +15,12 @@ final class SignalStore: ObservableObject {
     let paths: AnySeeConfigPaths
     private let configStore: ConfigStore
     private var refreshTask: Task<Void, Never>?
-    private var schedulerTask: Task<Void, Never>?
+    private var schedulerTasks: [String: Task<Void, Never>] = [:]
+    private var scheduledIntervals: [String: Int] = [:]
+    private var pendingScheduledSourceIDs: Set<String> = []
+    private var itemsBySourceID: [String: [SignalItem]] = [:]
+    private var runIssuesBySourceID: [String: [ValidationIssue]] = [:]
+    private var validationIssues: [ValidationIssue] = []
     private var dismissedIDs: Set<String> = []
     private var snoozedUntil: [String: Date] = [:]
 
@@ -51,24 +56,37 @@ final class SignalStore: ObservableObject {
     }
 
     func refresh() {
-        guard refreshTask == nil else { return }
+        refresh(request: .manual)
+    }
+
+    private func refresh(request: SourceRefreshRequest) {
+        guard refreshTask == nil else {
+            if case .scheduled(let sourceIDs) = request {
+                pendingScheduledSourceIDs.formUnion(sourceIDs)
+            }
+            return
+        }
+
         isRefreshing = true
         let paths = paths
         let configStore = configStore
 
         refreshTask = Task { [weak self] in
             let snapshot = await Task.detached(priority: .userInitiated) {
-                Self.loadAndRun(configStore: configStore, paths: paths)
+                Self.loadAndRun(configStore: configStore, paths: paths, request: request)
             }.value
 
             guard let self else { return }
-            self.items = snapshot.items
-            self.issues = snapshot.issues
+            self.apply(snapshot)
             self.sources = snapshot.sources
             self.lastRefreshAt = Date()
             self.isRefreshing = false
             self.refreshTask = nil
-            self.restartScheduler(intervalSeconds: snapshot.nextIntervalSeconds)
+            self.updateSchedulers(for: snapshot.sources, resetExisting: request == .manual)
+            if request == .manual {
+                self.pendingScheduledSourceIDs.removeAll()
+            }
+            self.startPendingScheduledRefreshIfNeeded()
         }
     }
 
@@ -95,63 +113,130 @@ final class SignalStore: ObservableObject {
     }
 
     func runCommandAction(_ action: SignalAction) {
-        guard let command = action.command, command.hasPrefix("/") else { return }
+        guard let executableURL = try? RunCommandResolver.resolveExecutableURL(command: action.command, paths: paths) else { return }
+        guard FileManager.default.isExecutableFile(atPath: executableURL.path) else { return }
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: command)
+        process.executableURL = executableURL
         process.arguments = action.arguments
         try? process.run()
     }
 
-    private func restartScheduler(intervalSeconds: Int?) {
-        schedulerTask?.cancel()
-        guard let intervalSeconds, intervalSeconds > 0 else { return }
+    private func apply(_ snapshot: RefreshSnapshot) {
+        validationIssues = snapshot.validationIssues
+        if snapshot.replacesAllSourceResults {
+            itemsBySourceID = [:]
+            runIssuesBySourceID = [:]
+        }
 
-        schedulerTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(intervalSeconds))
-                await MainActor.run {
-                    self?.refresh()
+        let enabledSourceIDs = Set(snapshot.sources.filter(\.enabled).map(\.id))
+        itemsBySourceID = itemsBySourceID.filter { enabledSourceIDs.contains($0.key) }
+        runIssuesBySourceID = runIssuesBySourceID.filter { enabledSourceIDs.contains($0.key) }
+
+        for result in snapshot.results {
+            itemsBySourceID[result.sourceID] = result.items
+            runIssuesBySourceID[result.sourceID] = result.issues
+        }
+
+        items = Self.orderedItems(from: itemsBySourceID, sources: snapshot.sources)
+        issues = Self.orderedIssues(
+            validationIssues: validationIssues,
+            runIssuesBySourceID: runIssuesBySourceID,
+            sources: snapshot.sources
+        )
+    }
+
+    private func updateSchedulers(for sources: [SignalSource], resetExisting: Bool) {
+        var intervals: [String: Int] = [:]
+        for scheduledRefresh in SourceRefreshPlanner.scheduledRefreshes(for: sources) where intervals[scheduledRefresh.sourceID] == nil {
+            intervals[scheduledRefresh.sourceID] = scheduledRefresh.intervalSeconds
+        }
+
+        let staleSourceIDs = schedulerTasks.keys.filter { sourceID in
+            resetExisting || intervals[sourceID] != scheduledIntervals[sourceID]
+        }
+
+        for sourceID in staleSourceIDs {
+            schedulerTasks[sourceID]?.cancel()
+            schedulerTasks[sourceID] = nil
+        }
+
+        for (sourceID, intervalSeconds) in intervals where schedulerTasks[sourceID] == nil {
+            schedulerTasks[sourceID] = Task { [weak self] in
+                while !Task.isCancelled {
+                    do {
+                        try await Task.sleep(for: .seconds(intervalSeconds))
+                    } catch {
+                        break
+                    }
+                    guard !Task.isCancelled else { break }
+                    await MainActor.run {
+                        self?.enqueueScheduledRefresh(sourceID: sourceID)
+                    }
                 }
             }
+        }
+
+        scheduledIntervals = intervals
+        pendingScheduledSourceIDs.formIntersection(Set(intervals.keys))
+    }
+
+    private func enqueueScheduledRefresh(sourceID: String) {
+        pendingScheduledSourceIDs.insert(sourceID)
+        startPendingScheduledRefreshIfNeeded()
+    }
+
+    private func startPendingScheduledRefreshIfNeeded() {
+        guard refreshTask == nil, !pendingScheduledSourceIDs.isEmpty else { return }
+        let sourceIDs = pendingScheduledSourceIDs
+        pendingScheduledSourceIDs.removeAll()
+        refresh(request: .scheduled(sourceIDs: sourceIDs))
+    }
+
+    nonisolated private static func loadAndRun(configStore: ConfigStore, paths: AnySeeConfigPaths, request: SourceRefreshRequest) -> RefreshSnapshot {
+        do {
+            let configuration = try configStore.load()
+            let validationIssues = configStore.validate(configuration)
+            let runner = SourceRunner()
+            let results = SourceRefreshPlanner
+                .sourcesToRun(for: request, in: configuration.sources)
+                .map { runner.run($0, paths: paths) }
+
+            return RefreshSnapshot(
+                validationIssues: validationIssues,
+                results: results,
+                sources: configuration.sources,
+                replacesAllSourceResults: request == .manual
+            )
+        } catch {
+            return RefreshSnapshot(
+                validationIssues: [.init(severity: .error, message: error.localizedDescription)],
+                results: [],
+                sources: [],
+                replacesAllSourceResults: true
+            )
         }
     }
 
-    nonisolated private static func loadAndRun(configStore: ConfigStore, paths: AnySeeConfigPaths) -> RefreshSnapshot {
-        do {
-            let configuration = try configStore.load()
-            var allIssues = configStore.validate(configuration)
-            var allItems: [SignalItem] = []
-            let runner = SourceRunner()
+    nonisolated private static func orderedItems(from itemsBySourceID: [String: [SignalItem]], sources: [SignalSource]) -> [SignalItem] {
+        sources
+            .filter(\.enabled)
+            .flatMap { itemsBySourceID[$0.id] ?? [] }
+    }
 
-            for source in configuration.sources where source.enabled {
-                let result = runner.run(source, paths: paths)
-                allItems.append(contentsOf: result.items)
-                allIssues.append(contentsOf: result.issues)
-            }
-
-            let interval = configuration.sources
-                .filter(\.enabled)
-                .compactMap { source -> Int? in
-                    guard source.refreshPolicy.kind == .interval else { return nil }
-                    return source.refreshPolicy.intervalSeconds
-                }
-                .min()
-
-            return RefreshSnapshot(items: allItems, issues: allIssues, sources: configuration.sources, nextIntervalSeconds: interval)
-        } catch {
-            return RefreshSnapshot(
-                items: [],
-                issues: [.init(severity: .error, message: error.localizedDescription)],
-                sources: [],
-                nextIntervalSeconds: nil
-            )
-        }
+    nonisolated private static func orderedIssues(
+        validationIssues: [ValidationIssue],
+        runIssuesBySourceID: [String: [ValidationIssue]],
+        sources: [SignalSource]
+    ) -> [ValidationIssue] {
+        validationIssues + sources
+            .filter(\.enabled)
+            .flatMap { runIssuesBySourceID[$0.id] ?? [] }
     }
 }
 
 private struct RefreshSnapshot: Sendable {
-    var items: [SignalItem]
-    var issues: [ValidationIssue]
+    var validationIssues: [ValidationIssue]
+    var results: [SourceRunResult]
     var sources: [SignalSource]
-    var nextIntervalSeconds: Int?
+    var replacesAllSourceResults: Bool
 }

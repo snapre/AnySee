@@ -136,14 +136,14 @@ public struct ConfigStore: Sendable {
             }
 
             for signal in source.manualSignals {
-                issues.append(contentsOf: validate(signal: signal, sourceID: source.id))
+                issues.append(contentsOf: validate(signal: signal, sourceID: source.id, fileManager: fileManager))
             }
         }
 
         return issues
     }
 
-    public func validate(signal: SignalItem, sourceID: String) -> [ValidationIssue] {
+    public func validate(signal: SignalItem, sourceID: String, fileManager: FileManager = .default) -> [ValidationIssue] {
         var issues: [ValidationIssue] = []
         if signal.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             issues.append(.init(severity: .error, sourceID: sourceID, message: "Signal id cannot be empty."))
@@ -162,14 +162,37 @@ public struct ConfigStore: Sendable {
                     issues.append(.init(severity: .error, sourceID: sourceID, message: "Action `\(action.label)` requires text."))
                 }
             case .runCommand:
-                if action.command?.isEmpty ?? true {
+                guard let command = action.command, !command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     issues.append(.init(severity: .error, sourceID: sourceID, message: "Action `\(action.label)` requires command."))
+                    continue
                 }
+                issues.append(contentsOf: validateRunCommandAction(action, command: command, sourceID: sourceID, fileManager: fileManager))
             case .dismiss, .snooze:
                 break
             }
         }
         return issues
+    }
+
+    private func validateRunCommandAction(_ action: SignalAction, command: String, sourceID: String, fileManager: FileManager) -> [ValidationIssue] {
+        do {
+            let executableURL = try RunCommandResolver.resolveExecutableURL(command: command, paths: paths)
+            var isDirectory: ObjCBool = false
+
+            guard fileManager.fileExists(atPath: executableURL.path, isDirectory: &isDirectory) else {
+                return [.init(severity: .error, sourceID: sourceID, message: "Action `\(action.label)` command does not exist: \(executableURL.path)")]
+            }
+            guard !isDirectory.boolValue else {
+                return [.init(severity: .error, sourceID: sourceID, message: "Action `\(action.label)` command is a directory: \(executableURL.path)")]
+            }
+            guard fileManager.isExecutableFile(atPath: executableURL.path) else {
+                return [.init(severity: .error, sourceID: sourceID, message: "Action `\(action.label)` command is not executable: \(executableURL.path)")]
+            }
+
+            return []
+        } catch {
+            return [.init(severity: .error, sourceID: sourceID, message: "Action `\(action.label)` command is invalid: \(error.localizedDescription)")]
+        }
     }
 
     private func writeIfMissing(_ contents: String, to url: URL, fileManager: FileManager) throws {
