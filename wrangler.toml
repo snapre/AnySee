@@ -9,6 +9,6 @@ CONTACT_EMAIL = "hello@anysee.bar"
 # relying on /api/waitlist for production capture. The waitlist function falls
 # back to the public contact email when this binding is absent.
 #
-# [[kv_namespaces]]
-# binding = "ANYSEE_WAITLIST"
-# id = "replace-with-kv-namespace-id"
+[[kv_namespaces]]
+binding = "ANYSEE_WAITLIST"
+id = "ba8881ecfbfe48dc90ab2c8c4a1b6e59"
