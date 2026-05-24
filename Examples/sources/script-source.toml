@@ -1,5 +1,5 @@
-id = "example-script"
-name = "Example Script"
+id = "template-script-signal"
+name = "Template: Script Signal"
 kind = "script"
 enabled = false
 

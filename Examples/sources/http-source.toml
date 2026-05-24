@@ -1,5 +1,5 @@
-id = "example-http"
-name = "Example HTTP"
+id = "template-http-health"
+name = "Template: HTTP Health Check"
 kind = "http"
 enabled = false
 
@@ -14,7 +14,7 @@ expected_status = 200
 signal_on_status_mismatch = true
 json_path = "status"
 not_equals = "ok"
-title = "Example service needs attention"
-body = "The HTTP health check did not report status=ok."
+title = "HTTP health check needs attention"
+body = "The configured HTTP health check did not report status=ok."
 priority = "high"
 state = "needs_attention"

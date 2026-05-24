@@ -41,8 +41,8 @@ public enum DefaultConfigTemplates {
     """
 
     public static let httpSource = """
-    id = "example-http"
-    name = "Example HTTP"
+    id = "template-http-health"
+    name = "Template: HTTP Health Check"
     kind = "http"
     enabled = false
 
@@ -57,15 +57,15 @@ public enum DefaultConfigTemplates {
     signal_on_status_mismatch = true
     json_path = "status"
     not_equals = "ok"
-    title = "Example service needs attention"
-    body = "The HTTP health check did not report status=ok."
+    title = "HTTP health check needs attention"
+    body = "The configured HTTP health check did not report status=ok."
     priority = "high"
     state = "needs_attention"
     """
 
     public static let scriptSource = """
-    id = "example-script"
-    name = "Example Script"
+    id = "template-script-signal"
+    name = "Template: Script Signal"
     kind = "script"
     enabled = false
 
@@ -85,7 +85,7 @@ public enum DefaultConfigTemplates {
       "body": "This signal came from scripts/sample-signal.sh",
       "priority": "low",
       "state": "needs_attention",
-      "source": "example-script",
+      "source": "template-script-signal",
       "actions": [
         { "label": "Dismiss", "type": "dismiss" }
       ]

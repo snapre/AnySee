@@ -42,6 +42,8 @@ public struct ConfigStore: Sendable {
 
         try writeIfMissing(DefaultConfigTemplates.mainConfig, to: paths.mainConfigFile, fileManager: fileManager)
         try writeIfMissing(DefaultConfigTemplates.manualSource, to: paths.sourcesDirectory.appendingPathComponent("manual.toml"), fileManager: fileManager)
+        try writeIfMissing(DefaultConfigTemplates.httpSource, to: paths.sourcesDirectory.appendingPathComponent("template-http.toml"), fileManager: fileManager)
+        try writeIfMissing(DefaultConfigTemplates.scriptSource, to: paths.sourcesDirectory.appendingPathComponent("template-script.toml"), fileManager: fileManager)
         try writeIfMissing(DefaultConfigTemplates.httpSource, to: paths.examplesDirectory.appendingPathComponent("http-source.toml"), fileManager: fileManager)
         try writeIfMissing(DefaultConfigTemplates.scriptSource, to: paths.examplesDirectory.appendingPathComponent("script-source.toml"), fileManager: fileManager)
         try writeIfMissing(DefaultConfigTemplates.manualSource, to: paths.examplesDirectory.appendingPathComponent("manual-source.toml"), fileManager: fileManager)

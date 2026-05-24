@@ -50,7 +50,9 @@ swift run anysee preview welcome
 swift run anysee run welcome
 ```
 
-`doctor` creates the local config directory and default examples if they do not already exist.
+`doctor` creates the local config directory, the welcome source, disabled HTTP
+and script source templates in `sources/`, and default examples if they do not
+already exist. The templates stay inert until `enabled = true`.
 
 ## Website
 

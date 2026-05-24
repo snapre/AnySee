@@ -5,7 +5,7 @@ printf '%s\n' '{
   "body": "This signal came from scripts/sample-signal.sh",
   "priority": "low",
   "state": "needs_attention",
-  "source": "example-script",
+  "source": "template-script-signal",
   "actions": [
     { "label": "Dismiss", "type": "dismiss" }
   ]
